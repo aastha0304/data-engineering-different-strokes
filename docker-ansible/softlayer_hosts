@@ -1,0 +1,2 @@
+[deployA]
+169.38.69.162 ansible_ssh_user=root

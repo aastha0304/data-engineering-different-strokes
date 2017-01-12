@@ -1,0 +1,8 @@
+- name: Install Docker on remote hosts
+  hosts: all
+  sudo: yes
+  tasks:
+    - name: Go to the folder and execute command
+      command: chdir=/mnt ls
+    - name: Install docker
+      shell: curl -sSL https://get.docker.com | sh

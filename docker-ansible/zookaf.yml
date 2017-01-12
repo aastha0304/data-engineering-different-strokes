@@ -1,0 +1,17 @@
+---
+- hosts: deployA
+  sudo: yes
+
+  tasks:
+    - name: Go to the folder and execute command
+      command: chdir=/mnt ls
+    
+    - name: Fetch the zook Container IP
+      shell: docker exec zookeeper ip -o -4 addr list eth0 | awk '{print $4}' | cut -d/ -f1
+      register: zook_ip
+    - set_fact: zip={{ zook_ip.stdout }}
+
+    - name: create topic
+      command: "docker run --rm ches/kafka
+		kafka-topics.sh --create --topic test --replication-factor 1 --partitions 1 --zookeeper {{ zip }}:2181" 
+

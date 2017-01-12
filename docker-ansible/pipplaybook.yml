@@ -1,0 +1,12 @@
+- name: Install zookeeper on remote hosts
+  hosts: deployA
+  sudo: yes
+  tasks:
+    - name: Go to the folder and execute command
+      command: chdir=/mnt ls
+    - name: Install python packages	
+      apt: name=python-pip
+    - name: Install python packages	
+      apt: name=python-dev
+    - name: Install python packages	
+      apt: name=build-essential	

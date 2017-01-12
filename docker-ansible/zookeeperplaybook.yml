@@ -1,0 +1,21 @@
+- name: Install zookeeper on remote hosts
+  hosts: deployA
+  sudo: yes
+  tasks:
+    - name: Go to the folder and execute command
+      command: chdir=/mnt ls
+    - name: Install docker-py
+      pip: name=docker-py
+    - name: Install zookeeper
+      docker:
+        image="jplock/zookeeper:3.4.6"
+        name=zookeeper
+        ports=2181:2181
+        state=running
+    - name: Wait a few minutes for the IPs to be set to the container
+      wait_for: timeout=120
+    - name: Fetch the zook Container IP
+      shell: docker exec zookeeper ip -o -4 addr list eth0 | awk '{print $4}' | cut -d/ -f1
+      register: zook_ip
+    - name: print the ip
+      debug: msg={{ zook_ip.stdout }}

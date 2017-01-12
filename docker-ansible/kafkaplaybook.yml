@@ -1,0 +1,21 @@
+- name: Install kafka on remote hosts
+  hosts: deployA
+  sudo: yes
+  tasks:
+    - name: Go to the folder and execute command
+      command: chdir=/mnt ls
+    - name: Install docker-py
+      pip: name=docker-py
+    - name: Install kafka
+      docker:
+        image="ches/kafka"
+        name=kafka
+        ports=9091:9091
+        links=zookeeper
+    - name: Wait a few minutes for the IPs to be set to the container
+      wait_for: timeout=120
+    - name: Fetch the kafka Container IP
+      shell: docker exec kafka ip -o -4 addr list eth0 | awk '{print $4}' | cut -d/ -f1
+      register: kafka_ip
+    - name: print the ip
+      debug: msg={{ kafka_ip.stdout }}
