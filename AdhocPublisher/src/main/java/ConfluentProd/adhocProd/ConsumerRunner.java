@@ -61,13 +61,12 @@ public class ConsumerRunner implements Runnable {
 						return mapsArray;
 					}
 				}else if (maps instanceof JSONObject){
-					mapsArray.add(record.value());
+					mapsArray.add(maps);
 				}
 			} catch (ParseException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
-				
 		}
 		return mapsArray;
 	}
@@ -82,18 +81,16 @@ public class ConsumerRunner implements Runnable {
 					JSONArray oldRecord = parseOldRecord(record);
 					if( oldRecord.size()>0 ){
 						for(int i=0; i<oldRecord.size(); i++){
-							String singleRecord = (String) oldRecord.get(i);
+							JSONObject singleRecord = (JSONObject) oldRecord.get(i);
 							if( !singleRecord.isEmpty() ){
-								JSONObject single = (JSONObject) parser.parse(singleRecord);
-								prodObj.produceNewEvents(single);
+								//JSONObject single = (JSONObject) parser.parse(singleRecord);
+								prodObj.produceNewEvents(singleRecord);
 							}
 						}	
 					}
 				}
 				consumer.commitAsync();
 			}
-		}catch(ParseException e){
-		    e.printStackTrace();
 		}catch(ClassCastException e){
 		    e.printStackTrace();
 		}catch (Exception e) {

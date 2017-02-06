@@ -23,6 +23,9 @@ public class SingleProducer {
 	Map<String, Integer> schemaMap;
 	private String topic;
 	
+	private static final String COMPRESSION_TYPE_CONFIG = "snappy"; 
+	private static final String ACKS_TYPE_CONFIG = "1"; 
+	
 	private SingleProducer() {
 	      // Exists only to defeat instantiation.
 	}
@@ -40,9 +43,14 @@ public class SingleProducer {
 		producerProps.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG,
 		        io.confluent.kafka.serializers.KafkaAvroSerializer.class);
 		producerProps.put("schema.registry.url", regUrl);
+		producerProps.put(ProducerConfig.ACKS_CONFIG, ACKS_TYPE_CONFIG);
+		producerProps.put(ProducerConfig.COMPRESSION_TYPE_CONFIG, COMPRESSION_TYPE_CONFIG); 
+		
 		this.producer = new KafkaProducer<>(producerProps);
 		this.schemaObj = schemaObj;
-		Schema innerSchema = this.schemaObj.getValueSchema().getField("balanceTxns").schema();
+		this.topic = topic;
+
+		Schema innerSchema = this.schemaObj.getValueSchema().getField(this.topic).schema();
 		if(innerSchema.getType()==Schema.Type.UNION){
 			this.schemaMap = new HashMap<>();
 			schemas = innerSchema.getTypes();
@@ -51,7 +59,6 @@ public class SingleProducer {
 				this.schemaMap.put(schema.getName(), i++);
 			}
 		}
-		this.topic = topic;
 	}
 	private String toCamelCase(String hyphened){
 		String[] splits = hyphened.split("-");
@@ -76,11 +83,10 @@ public class SingleProducer {
 			actual.put("userId", oldRecord.get("userId"));
 			actual.put("amount", amount);
 			actual.put("timestamp", oldRecord.get("timestamp"));
-			outer.put("balanceTxns", actual);
+			outer.put(this.topic, actual);
 			try{
 				ProducerRecord<Long, GenericRecord> record = new ProducerRecord<>(this.topic, 
 						(long) oldRecord.get("userId"), outer);
-				System.out.println(record.value().get("balanceTxns"));
 				producer.send(record, new SimpleProdCallback());
 			}catch(Exception e){
 				e.printStackTrace();
