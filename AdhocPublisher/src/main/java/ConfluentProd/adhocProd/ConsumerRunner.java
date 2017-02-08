@@ -53,31 +53,27 @@ public class ConsumerRunner implements Runnable {
 		if( stringContainsItemFromList(record.value(), this.toParse) ) {
 			
 			try {
-				if (maps instanceof JSONObject){
-					System.out.println("JSONOBJECT!!!!");
-					System.out.println(record.value());
-					mapsArray.add(maps);
-				}else if(maps instanceof String){
-					System.out.println("STRING!!!!");
-					System.out.println(record.value());
-					maps = parser.parse(record.value());
-					if( maps instanceof JSONArray ){
-						JSONArray tempArray = (JSONArray) maps;
-						int len = tempArray.size();
-						if(len>0){
-							if(tempArray.get(0) instanceof String){
-								for(int i=0; i<tempArray.size(); i++){
-									mapsArray.add(parser.parse((String)tempArray.get(i)));
-								}	
-							}else if(tempArray.get(0) instanceof JSONObject){
-								for(int i=0; i<tempArray.size(); i++){
-									mapsArray.add( (JSONObject) tempArray.get(i) );
-								}	
-							}
+				maps = parser.parse(record.value());
+				if( maps instanceof JSONArray ){
+					JSONArray tempArray = (JSONArray) maps;
+					int len = tempArray.size();
+					if(len>0){
+						if(tempArray.get(0) instanceof String){
+							for(int i=0; i<tempArray.size(); i++){
+								mapsArray.add(parser.parse( (String) tempArray.get(i)));
+							}	
+						}else if(tempArray.get(0) instanceof JSONObject){
+							for(int i=0; i<tempArray.size(); i++){
+								mapsArray.add( (JSONObject) tempArray.get(i) );
+							}	
 						}
 					}
+				}else if(maps instanceof JSONObject){
+					mapsArray.add( (JSONObject) maps );
 				}
-			} catch (ParseException e) {
+				System.out.println(record.value());
+				System.out.println(mapsArray.size());
+			}catch (ParseException e) {
 				// TODO Auto-generated catch block
 				System.out.println(record.value());
 				e.printStackTrace();
@@ -87,6 +83,7 @@ public class ConsumerRunner implements Runnable {
 				e.printStackTrace();
 			}
 		}
+		
 		return mapsArray;
 	}
 	@Override

@@ -89,6 +89,8 @@ public class SingleProducer {
 						(long) oldRecord.get("userId"), outer);
 				producer.send(record, new SimpleProdCallback());
 			}catch(Exception e){
+				System.out.println("error while producing");
+				System.out.println(oldRecord.toJSONString());
 				e.printStackTrace();
 				System.exit(1);
 			}
