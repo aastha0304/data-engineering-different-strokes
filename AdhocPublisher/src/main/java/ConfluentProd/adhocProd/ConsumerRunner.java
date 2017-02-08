@@ -12,7 +12,6 @@ import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
 
-import scala.Long;
 public class ConsumerRunner implements Runnable {
 	private final KafkaConsumer<String, String> consumer;
 	private final List<String> topics;
@@ -52,19 +51,39 @@ public class ConsumerRunner implements Runnable {
 		Object maps = new JSONObject();
 		JSONArray mapsArray = new JSONArray();
 		if( stringContainsItemFromList(record.value(), this.toParse) ) {
+			
 			try {
-				maps = parser.parse(record.value());
-				if( maps instanceof JSONArray ){
-					mapsArray = (JSONArray) maps;
-					int len = mapsArray.size();
-					if(len>0){
-						return mapsArray;
-					}
-				}else if (maps instanceof JSONObject){
+				if (maps instanceof JSONObject){
+					System.out.println("JSONOBJECT!!!!");
+					System.out.println(record.value());
 					mapsArray.add(maps);
+				}else if(maps instanceof String){
+					System.out.println("STRING!!!!");
+					System.out.println(record.value());
+					maps = parser.parse(record.value());
+					if( maps instanceof JSONArray ){
+						JSONArray tempArray = (JSONArray) maps;
+						int len = tempArray.size();
+						if(len>0){
+							if(tempArray.get(0) instanceof String){
+								for(int i=0; i<tempArray.size(); i++){
+									mapsArray.add(parser.parse((String)tempArray.get(i)));
+								}	
+							}else if(tempArray.get(0) instanceof JSONObject){
+								for(int i=0; i<tempArray.size(); i++){
+									mapsArray.add( (JSONObject) tempArray.get(i) );
+								}	
+							}
+						}
+					}
 				}
 			} catch (ParseException e) {
 				// TODO Auto-generated catch block
+				System.out.println(record.value());
+				e.printStackTrace();
+			} catch (Exception e) {
+				// TODO Auto-generated catch block
+				System.out.println(record.value());
 				e.printStackTrace();
 			}
 		}
@@ -83,7 +102,6 @@ public class ConsumerRunner implements Runnable {
 						for(int i=0; i<oldRecord.size(); i++){
 							JSONObject singleRecord = (JSONObject) oldRecord.get(i);
 							if( !singleRecord.isEmpty() ){
-								//JSONObject single = (JSONObject) parser.parse(singleRecord);
 								prodObj.produceNewEvents(singleRecord);
 							}
 						}	
@@ -97,11 +115,11 @@ public class ConsumerRunner implements Runnable {
 		    e.printStackTrace();
 		}finally {    
 			consumer.close();
-			this.prodObj.shutdown();
-			System.exit(1);
 		}
 	}
 	public void shutdown() {
 		consumer.wakeup();
+		this.prodObj.shutdown();
+		System.exit(1);
 	}
 }

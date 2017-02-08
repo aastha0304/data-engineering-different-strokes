@@ -81,9 +81,7 @@ public class AdhocConProd {
 		prodObj.init(adhocConProd.taskConfig.getProperty("bootstrap.servers"),
 				adhocConProd.taskConfig.getProperty("schema.registry.url"),
 				schemaObj, adhocConProd.taskConfig.getProperty("topic"));
-
 		adhocConProd.buildConsumer(prodObj);
-
 		adhocConProd.runConProd();
 	}
 }
