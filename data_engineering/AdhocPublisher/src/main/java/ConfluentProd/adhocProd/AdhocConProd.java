@@ -17,7 +17,7 @@ public class AdhocConProd {
 	ExecutorService executor;
 
 	public void buildConsumer(SingleProducer prodObj) {
-		int numConsumers = 3;
+		int numConsumers = 1;
 		String groupId = taskConfig.getProperty("group.id");
 		List<String> topics = Arrays.asList(taskConfig
 				.getProperty("producingTopic"));

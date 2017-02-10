@@ -39,7 +39,9 @@ public class SingleProducer {
 		Properties producerProps = new Properties();
 		producerProps.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, bootstrapServers);
 		producerProps.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG,
-		        io.confluent.kafka.serializers.KafkaAvroSerializer.class);
+				org.apache.kafka.common.serialization.LongSerializer.class);
+//		producerProps.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG,
+//				io.confluent.kafka.serializers.KafkaAvroSerializer.class);
 		producerProps.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG,
 		        io.confluent.kafka.serializers.KafkaAvroSerializer.class);
 		producerProps.put("schema.registry.url", regUrl);
@@ -87,6 +89,7 @@ public class SingleProducer {
 			try{
 				ProducerRecord<Long, GenericRecord> record = new ProducerRecord<>(this.topic, 
 						(long) oldRecord.get("userId"), outer);
+				System.out.println(record.key());
 				producer.send(record, new SimpleProdCallback());
 			}catch(Exception e){
 				System.out.println("error while producing");

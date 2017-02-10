@@ -1,6 +1,7 @@
-package ConfluentProd.adhocProd;
+package aggregationEngine.sparkAggregator;
 
 import io.confluent.kafka.schemaregistry.client.CachedSchemaRegistryClient;
+import io.confluent.kafka.schemaregistry.client.SchemaRegistryClient;
 import io.confluent.kafka.schemaregistry.client.rest.RestService;
 import io.confluent.kafka.schemaregistry.client.rest.exceptions.RestClientException;
 
@@ -12,9 +13,9 @@ import org.apache.avro.Schema.Type;
 public class NewEventsSchema {
 	private String topic;
 	private String regUrl;
-	private Schema keySchema;
+	//private Schema keySchema;
 	private Schema valueSchema;
-
+	private SchemaRegistryClient cachedSchemaRegistryClient;
 	// private Properties taskConfig;
 	NewEventsSchema(String topic, String regUrl) {
 		this.topic = topic;
@@ -24,13 +25,12 @@ public class NewEventsSchema {
 
 	public void buildSchema() {
 		this.valueSchema = fixSchema(topic, "-value");
-		this.keySchema = fixSchema(topic, "-key");
+		//this.keySchema = fixSchema(topic, "-key");
 	}
 
 	private Schema fixSchema(String topic, String suffix) {
 		String subject = new StringBuffer().append(topic).append(suffix).toString();
 		Integer identityMapCapacity;
-		CachedSchemaRegistryClient cachedSchemaRegistryClient;
 		io.confluent.kafka.schemaregistry.client.rest.entities.Schema response;
 		identityMapCapacity = 100;
 		try {
@@ -52,15 +52,19 @@ public class NewEventsSchema {
 		return this.valueSchema;
 	}
 
-	public Schema getKeySchema() {
-		return this.keySchema;
-	}
+//	public Schema getKeySchema() {
+//		return this.keySchema;
+//	}
 
 	public Type getValueSchemaType() {
 		return this.valueSchema.getType();
 	}
 
-	public Type getKeySchemaType() {
-		return this.keySchema.getType();
+//	public Type getKeySchemaType() {
+//		return this.keySchema.getType();
+//	}
+	
+	public SchemaRegistryClient getSchemaRegistryClient(){
+		return this.cachedSchemaRegistryClient;
 	}
 }

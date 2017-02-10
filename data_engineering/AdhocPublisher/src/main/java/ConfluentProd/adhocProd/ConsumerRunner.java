@@ -71,8 +71,8 @@ public class ConsumerRunner implements Runnable {
 				}else if(maps instanceof JSONObject){
 					mapsArray.add( (JSONObject) maps );
 				}
-				System.out.println(record.value());
-				System.out.println(mapsArray.size());
+//				System.out.println(record.value());
+//				System.out.println(mapsArray.size());
 			}catch (ParseException e) {
 				// TODO Auto-generated catch block
 				System.out.println(record.value());
