@@ -43,3 +43,13 @@ curl -X POST   -H "Content-Type: application/json" \
 This is standalone mode of KC. Remember to escape "%" in connection url by replacing % with %25 or url encode in program. 
 
 "timestamp+incrementing" mode is most reliable mode. Give the auto-incrementing column if you have incrementing mode on, and the modified timestamp column if you have the timestamp mode on. Use "table.whitelist" option for selecting tables, or all tables will be streamed. 
+
+Here we have connect to a redshift sink. Redshift configuration is given in redshift-sink.properties
+
+For some reason, docker container Kafka connect could not work so using connect-standalone with this command.
+
+```
+connect-standalone /etc/schema-registry/connect-avro-standalone.properties redshift-sink.properties 
+```
+
+And it worked :)
