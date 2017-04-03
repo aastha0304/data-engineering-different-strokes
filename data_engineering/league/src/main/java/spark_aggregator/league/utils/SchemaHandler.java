@@ -1,9 +1,22 @@
 package spark_aggregator.league.utils;
 
+import static org.apache.avro.SchemaCompatibility.checkReaderWriterCompatibility;
+import static org.apache.avro.SchemaCompatibility.SchemaCompatibilityType.COMPATIBLE;
+
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.Serializable;
 
 import org.apache.avro.Schema;
+import org.apache.avro.generic.GenericDatumReader;
+import org.apache.avro.generic.GenericDatumWriter;
+import org.apache.avro.generic.GenericRecord;
+import org.apache.avro.io.BinaryDecoder;
+import org.apache.avro.io.DatumReader;
+import org.apache.avro.io.DatumWriter;
+import org.apache.avro.io.DecoderFactory;
+import org.apache.avro.io.Encoder;
+import org.apache.avro.io.EncoderFactory;
 import org.apache.spark.api.java.JavaSparkContext;
 import org.apache.spark.broadcast.Broadcast;
 
@@ -50,4 +63,42 @@ public class SchemaHandler implements Serializable{
 		}
 		return null;
 	}
-}
+	/**
+	   * Convert a GenericRecord to a byte array.
+	   */
+	private static byte[] recordToByteArray(GenericRecord record) throws IOException {
+		try (ByteArrayOutputStream out = new ByteArrayOutputStream()) {
+			Encoder encoder = EncoderFactory.get().directBinaryEncoder(out, null);
+			DatumWriter<GenericRecord> writer = new GenericDatumWriter<>(record.getSchema());
+			writer.write(record, encoder);
+			byte[] byteArray = out.toByteArray();
+			return byteArray;
+		}
+	}
+	private static Schema parseSchema(String schemaStr) {
+		Schema.Parser parser = new Schema.Parser();
+		return parser.parse(schemaStr);
+	}
+	public static GenericRecord convertRecordSchema(GenericRecord record, String newSchemaStr) throws IOException {
+		Schema newSchema = parseSchema(newSchemaStr);
+		
+	    if (record.getSchema().equals(newSchema)) {
+	      return record;
+	    }
+
+	    if (checkReaderWriterCompatibility(newSchema, record.getSchema()).getType() != COMPATIBLE) {
+	      return null;
+	    }
+
+	    try {
+	      BinaryDecoder decoder = new DecoderFactory().binaryDecoder(recordToByteArray(record), null);
+	      DatumReader<GenericRecord> reader = new GenericDatumReader<>(record.getSchema(), newSchema);
+	      return reader.read(null, decoder);
+	    } catch (IOException e) {
+	      throw new IOException(
+	          String.format("Cannot convert avro record to new schema. Origianl schema = %s, new schema = %s",
+	              record.getSchema(), newSchema),
+	          e);
+	    }
+	  }
+}	

@@ -1,5 +1,6 @@
 package spark_aggregator.league.sink;
 
+import java.util.Iterator;
 import java.util.Map;
 
 import org.apache.kafka.common.TopicPartition;
@@ -11,6 +12,6 @@ import spark_aggregator.league.UsableColumns;
 
 public interface Sink {
 	Map<TopicPartition, Long> getAndUpdateOffsets();
-	void upsert(Tuple2<Tuple2<Long, Long>, UsableColumns> row);
+	void upsert(Iterator<Tuple2<Tuple2<Long, Long>, UsableColumns>> row, OffsetRange o);
 	void upsert(OffsetRange[] offsetRanges);
 }

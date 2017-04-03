@@ -1,19 +1,21 @@
 package spark_aggregator.league.utils;
 
 public class Constants {
-	public static final String LEAGUETOPIC = "leagueEvents";
-	public static final String USERID_KEY = "userId";
-	public static final String PRODUCTID_KEY = "productId";
-	public static final String LEAGUEID_KEY = "leagueId";
-	public static final String CLUSTERID_KEY = "clusterId";
-	public static final String ROUNDID_KEY = "roundId";
-	public static final String ENTRYFEE_KEY = "entryFee";
+	public static final String LEAGUETOPIC = "logic1-league_user_small";
+	public static final String USERID_KEY = "UserId";
+	public static final String PRODUCTID_KEY = "ProductId";
+	public static final String LEAGUEID_KEY = "LeagueId";
+	public static final String CLUSTERID_KEY = "ClusterId";
+	public static final String ROUNDID_KEY = "RoundId";
+	public static final String ENTRYFEE_KEY = "EntryFee";
 	public static final String PARTITION_KEY = "partitions";
 	public static final String TIMESTAMP_KEY = "timestamp";
 	public static final String FULLLEAGUES_KEY = "fullleagues";
 	public static final String IS_FULL = "isFull";
 	public static final String SUM = "sum";
 	public static final String COUNT = "count";
+	public static final String CURRENTSIZE_KEY = "CurrentSize";
+	public static final String LEAGUESIZE_KEY = "LeagueSize";
 	
 	public static final String VALUESCHEMAPREFIX = "-value";
 	public static final String KEYSCHEMAPREFIX = "-key";

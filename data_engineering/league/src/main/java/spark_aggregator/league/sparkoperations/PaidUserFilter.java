@@ -18,7 +18,10 @@ public class PaidUserFilter implements Function<ConsumerRecord<Long, GenericReco
 	public Boolean call(ConsumerRecord<Long, GenericRecord> arg0) throws Exception {
 		// TODO Auto-generated method stub
 		GenericRecord record = arg0.value();
-		if((double)record.get(Constants.ENTRYFEE_KEY)!=0 && arg0.key().equals(record.get(Constants.LEAGUEID_KEY)))
+		/* TO DO
+		 * add more sanity tests here if needed
+		 */
+		if((float)record.get(Constants.ENTRYFEE_KEY)!=0)
 			return true;
 		return false;
 	}

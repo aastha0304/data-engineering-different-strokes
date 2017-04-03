@@ -25,13 +25,13 @@ public class RoundClusterIndexer implements
 		throws Exception {
 		// TODO Auto-generated method stub
 		UsableColumns usableColumns = new UsableColumns();
-		usableColumns.setAmount((double) arg0._2.get(Constants.ENTRYFEE_KEY));
+		usableColumns.setAmount((float) arg0._2.get(Constants.ENTRYFEE_KEY));
 		Set<Long> fullLeagues = new HashSet<>();
-		if( (boolean) arg0._2.get(Constants.IS_FULL))
+		if( arg0._2.get(Constants.LEAGUESIZE_KEY) == arg0._2.get(Constants.CURRENTSIZE_KEY))
 			fullLeagues.add((long) arg0._2.get(Constants.LEAGUEID_KEY));
 		usableColumns.setFullLeagues(fullLeagues);
 		usableColumns.setUsers(1);
-		return new Tuple2(new Tuple2(arg0._2.get(Constants.ROUNDID_KEY), arg0._2.get(Constants.CLUSTERID_KEY)),
+		return new Tuple2(new Tuple2(arg0._2.get(Constants.ROUNDID_KEY), arg0._2.get(Constants.PRODUCTID_KEY)),
 				usableColumns);
 	}
 }
