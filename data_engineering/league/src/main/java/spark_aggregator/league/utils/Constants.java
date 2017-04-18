@@ -1,7 +1,7 @@
 package spark_aggregator.league.utils;
 
 public class Constants {
-	public static final String LEAGUETOPIC = "logic1-league_user_small";
+	public static final String LEAGUETOPIC = "lu2-Dream11_LeagueJoined_dummy_6Apr";
 	public static final String USERID_KEY = "UserId";
 	public static final String PRODUCTID_KEY = "ProductId";
 	public static final String LEAGUEID_KEY = "LeagueId";

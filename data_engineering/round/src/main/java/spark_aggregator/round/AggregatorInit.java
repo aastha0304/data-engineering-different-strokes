@@ -1,4 +1,5 @@
-package spark_aggregator.league;
+package spark_aggregator.round;
+
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -27,28 +28,27 @@ import org.apache.spark.streaming.kafka010.LocationStrategies;
 import org.apache.spark.streaming.kafka010.OffsetRange;
 
 import io.confluent.kafka.serializers.KafkaAvroDeserializer;
-import spark_aggregator.league.sink.CouchbaseSink;
-import spark_aggregator.league.sink.Sink;
-import spark_aggregator.league.sparkoperations.LeagueUserDeduplicator;
-import spark_aggregator.league.sparkoperations.LeagueUserIndexer;
-import spark_aggregator.league.sparkoperations.PaidUserFilter;
-import spark_aggregator.league.sparkoperations.RoundClusterIndexer;
-import spark_aggregator.league.sparkoperations.RoundClusterReducer;
-import spark_aggregator.league.sparkoperations.ValueWriter;
-import spark_aggregator.league.utils.Constants;
-import spark_aggregator.league.utils.ProductClusterMapping;
+import spark_aggregator.round.sink.CouchbaseSink;
+import spark_aggregator.round.sink.Sink;
+import spark_aggregator.round.sparkoperations.NonEmptyRoundOpenTimeFilter;
+import spark_aggregator.round.sparkoperations.ProductClusterMapper;
+import spark_aggregator.round.sparkoperations.RoundClusterDeDuplicator;
+import spark_aggregator.round.sparkoperations.ValueWriter;
+import spark_aggregator.round.utils.Constants;
+import spark_aggregator.round.utils.ProductClusterMapping;
 //TO DO
 //look at all intervals
 //handle Offsets out of range with no configured reset policy for partitions
 //use connection pool
+//take tourformat enums
+
 public class AggregatorInit {
 	Properties taskConfig;
 	static Map<String, Object> kafkaParams;
 	static SparkConf sparkConf;
-	static JavaStreamingContext leagueSsc;
+	static JavaStreamingContext roundSsc;
 	static Map<TopicPartition, Long> fromOffsets;
 	static Sink sink;
-
 	void buildTaskConfig(String fileName) {
 		taskConfig = new Properties();
 		try {
@@ -70,7 +70,6 @@ public class AggregatorInit {
 				+ random.nextInt() 
 				+ "-" + System.currentTimeMillis());
 		kafkaParams.put("enable.auto.commit", false);
-		kafkaParams.put("auto.offset.rest", "latest");
 		//kafkaParams.put(KafkaAvroDeserializerConfig.SPECIFIC_AVRO_READER_CONFIG, true);
 		
 		kafkaParams.put("value.deserializer", KafkaAvroDeserializer.class);
@@ -84,26 +83,25 @@ public class AggregatorInit {
          It would be better to ask Kafka for the number of partitions so we can still
          build this Map dynamically when there isn't any data in the database yet.
           */
-            fromOffsets.put(new TopicPartition(Constants.LEAGUETOPIC, 0), 0L);
+            fromOffsets.put(new TopicPartition(Constants.ROUNDTOPIC, 0), 0L);
         }
 	}
 	void setupSsc(final String productClusterPath){
 		sparkConf = new SparkConf().setAppName("spark-league-aggregation")
-// 		uncomment for tweaking configs				
-				.set("spark.streaming.kafka.consumer.poll.ms", "70000")
-				.set("spark.streaming.kafka.consumer.cache.initialCapacity", "1")
-				.set("spark.streaming.kafka.consumer.cache.maxCapacity","1")
+//				.set("spark.streaming.kafka.consumer.poll.ms", "70000")
+//				.set("spark.streaming.kafka.consumer.cache.initialCapacity", "1")
+//				.set("spark.streaming.kafka.consumer.cache.maxCapacity","1")
 				.registerKryoClasses(new Class<?>[]{GenericData.class});
 		setupSink();
 
-		leagueSsc = new JavaStreamingContext(sparkConf, 
+		roundSsc = new JavaStreamingContext(sparkConf, 
 	    		Durations.seconds(Long.parseLong(taskConfig.getProperty("spark.batch.interval"))));
 		
 		fromOffsets = new HashMap<>();
 		getAndUpdateOffsets();
 				
-		Collection<String> topics = Arrays.asList(Constants.LEAGUETOPIC);
-//      uncomment if parallelization needed
+		Collection<String> topics = Arrays.asList(Constants.ROUNDTOPIC);
+//      optimisation
 //		int numStreams = Runtime.getRuntime().availableProcessors()-1;
 //		List<JavaDStream<ConsumerRecord<Long, GenericRecord>>> kafkaStreams = new ArrayList<>(numStreams);
 //		for (int i = 0; i < numStreams; i++) {
@@ -114,19 +112,21 @@ public class AggregatorInit {
 //		
 //		JavaDStream<ConsumerRecord<Long, GenericRecord>> initialStream = leagueSsc.union(kafkaStreams.get(0), kafkaStreams.subList(1, kafkaStreams.size()));		
 		final JavaInputDStream<ConsumerRecord<Long, GenericRecord>> kafkaStream;
+		
+//		kafkaParams.put("auto.offset.reset", "latest");
 
 // 		uncomment this for live, offsets will come from fromOffsets
 //		kafkaParams.put("auto.offset.reset", "latest");
-//		kafkaStream = KafkaUtils.createDirectStream(leagueSsc, 
+//		kafkaStream = KafkaUtils.createDirectStream(roundSsc, 
 //				LocationStrategies.PreferConsistent(),
 //				ConsumerStrategies.<Long, GenericRecord>Subscribe(topics, kafkaParams));
 //      use this when offsets are proper 				
-		kafkaStream = KafkaUtils.createDirectStream(leagueSsc, 
+		kafkaStream = KafkaUtils.createDirectStream(roundSsc, 
 				LocationStrategies.PreferConsistent(),
 				ConsumerStrategies.<Long, GenericRecord>Subscribe(topics, kafkaParams, fromOffsets));
-		
-		final Broadcast<HashMap<Long, Long>> p2cMappings = ProductClusterMapping.getInstance(leagueSsc.sparkContext(), 
+		final Broadcast<HashMap<Long, Long>> p2cMappings = ProductClusterMapping.getInstance(roundSsc.sparkContext(), 
 				productClusterPath);
+		
 		kafkaStream.foreachRDD(new VoidFunction<JavaRDD<ConsumerRecord<Long, GenericRecord>>>(){
 			/**
 			 * 
@@ -138,16 +138,12 @@ public class AggregatorInit {
 				// TODO Auto-generated method stub
 			    final OffsetRange[] offsetRanges = ((HasOffsetRanges) rdd.rdd()).offsetRanges();
 			    rdd
-			    .filter(new PaidUserFilter())
-				.mapToPair(new LeagueUserIndexer(p2cMappings.value()))
-			    .reduceByKey(new LeagueUserDeduplicator())
-				.mapToPair(new RoundClusterIndexer())
-				.reduceByKey(new RoundClusterReducer())
+			    .filter(new NonEmptyRoundOpenTimeFilter())
+			    .mapToPair(new ProductClusterMapper(p2cMappings.value()))
+			    .reduceByKey(new RoundClusterDeDuplicator())																														
 				.foreachPartition(new ValueWriter(sink, offsetRanges));
-			    //in case there are issues with offsets committing to sink 
-			    //((CanCommitOffsets) kafkaStream.inputDStream()).commitAsync(offsetRanges);	
 			    
-			    //don't do this, rdd line may fail but this execution will happen anyways
+			    //((CanCommitOffsets) kafkaStream.inputDStream()).commitAsync(offsetRanges);	
 			    //sink.upsert(offsetRanges);	
 			}
 			
@@ -171,7 +167,7 @@ public class AggregatorInit {
 		
 		init.setupSsc(args[1]);
 		
-		leagueSsc.start();
-		leagueSsc.awaitTermination();
+		roundSsc.start();
+		roundSsc.awaitTermination();
 	}		
 }

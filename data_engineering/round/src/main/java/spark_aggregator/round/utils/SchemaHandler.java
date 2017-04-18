@@ -1,4 +1,4 @@
-package spark_aggregator.league.utils;
+package spark_aggregator.round.utils;
 
 import static org.apache.avro.SchemaCompatibility.checkReaderWriterCompatibility;
 import static org.apache.avro.SchemaCompatibility.SchemaCompatibilityType.COMPATIBLE;
@@ -34,7 +34,7 @@ public class SchemaHandler implements Serializable{
 	}
 	public static Broadcast<Tuple2<String, String>> getInstance(JavaSparkContext jsc, String url) {
 		if (instance == null) {
-		      synchronized (SchemaHandler.class) {
+		      synchronized (ProductClusterMapping.class) {
 		    	  if (instance == null) {
 		    		  Schema valueSchema = fixSchema(Constants.VALUESCHEMAPREFIX, url);
 		    		  Schema keySchema = fixSchema(Constants.KEYSCHEMAPREFIX, url);
@@ -45,7 +45,7 @@ public class SchemaHandler implements Serializable{
 		return instance;
 	}
 	private static Schema fixSchema(String suffix, String schemaUrl) {
-		String subject = new StringBuffer().append(Constants.LEAGUETOPIC).append(suffix).toString();
+		String subject = new StringBuffer().append(Constants.ROUNDTOPIC).append(suffix).toString();
 		Integer identityMapCapacity;
 		io.confluent.kafka.schemaregistry.client.rest.entities.Schema response;
 		identityMapCapacity = 100;
