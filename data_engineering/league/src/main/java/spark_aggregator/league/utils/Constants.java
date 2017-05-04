@@ -1,7 +1,6 @@
 package spark_aggregator.league.utils;
 
 public class Constants {
-	public static final String LEAGUETOPIC = "lu2-Dream11_LeagueJoined_dummy_6Apr";
 	public static final String USERID_KEY = "UserId";
 	public static final String PRODUCTID_KEY = "ProductId";
 	public static final String LEAGUEID_KEY = "LeagueId";
@@ -38,5 +37,9 @@ public class Constants {
 	public static final String MEDIAN_AGG_VALUE = "median";
 	public static final String FROMOFFSET = "from_offset";
 	public static final String UNTILOFFSET = "until_offset";
-	
+	public static final int MAX_VALUE = 999999;
+	public static final String LEAGUETYPE_KEY = "LeagueType";
+	public static final String GRANDLEAGUETYPE_VAL = "grand";
+	public static final int GRANDLEAGUEPID = 17;
+	public static final String PRIVATELEAGUE = "private"; 
 }

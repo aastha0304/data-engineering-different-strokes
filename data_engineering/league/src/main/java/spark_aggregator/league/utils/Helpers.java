@@ -1,8 +1,6 @@
 package spark_aggregator.league.utils;
 
 import java.util.Set;
-
-
 import java.util.HashMap;
 import java.util.Map.Entry;
 

@@ -15,7 +15,6 @@ import java.util.concurrent.TimeUnit;
 import org.apache.kafka.common.TopicPartition;
 import org.apache.spark.streaming.kafka010.OffsetRange;
 
-import com.couchbase.client.core.message.kv.subdoc.multi.Lookup;
 import com.couchbase.client.core.time.Delay;
 import com.couchbase.client.java.Bucket;
 import com.couchbase.client.java.CouchbaseCluster;
@@ -25,7 +24,6 @@ import com.couchbase.client.java.document.json.JsonArray;
 import com.couchbase.client.java.document.json.JsonObject;
 import com.couchbase.client.java.error.CASMismatchException;
 import com.couchbase.client.java.error.DocumentAlreadyExistsException;
-import com.couchbase.client.java.subdoc.DocumentFragment;
 import com.couchbase.client.java.util.retry.RetryBuilder;
 
 import rx.Observable;
@@ -41,36 +39,37 @@ public class CouchbaseSink implements Sink, Serializable{
 	 */
 	private static final long serialVersionUID = 1L;
 	private Properties properties;
-	final String fullLeaguesKey = new StringBuffer()
-			.append(Constants.LEAGUETOPIC)
-			.append(":")
-			.append(Constants.FULLLEAGUES_KEY).toString();
-	final String offsetKey = new StringBuffer()
-			.append(Constants.LEAGUETOPIC)
-			.append(":")
-			.append(Constants.PARTITION_KEY).toString();
+	private String topic;
+	final String fullLeaguesKey;
+	final String offsetKey;
 	public CouchbaseSink(Properties properties){
 		this.properties = properties;
+		this.topic = (String)properties.get("topic");
+		fullLeaguesKey = new StringBuffer()
+				.append(this.topic)
+				.append(":")
+				.append(Constants.FULLLEAGUES_KEY).toString();
+		offsetKey = new StringBuffer()
+				.append(this.topic)
+				.append(":")
+				.append(Constants.PARTITION_KEY).toString();
 	}
 	
 	@Override
 	public Map<TopicPartition, Long> getAndUpdateOffsets() {
-		// TODO Auto-generated method stub 
 		Map<TopicPartition, Long> res = new HashMap<>();
 		CouchbaseCluster cluster = CouchbaseCluster.create((String)properties.get("com.couchbase.nodes"));
 		Bucket bucket = cluster.openBucket((String)properties.get("com.couchbase.bucket"));
-		if(bucket.exists(Constants.LEAGUETOPIC+":"+Constants.PARTITION_KEY)){
-			DocumentFragment<Lookup> json = bucket.lookupIn(Constants.LEAGUETOPIC+":"+Constants.PARTITION_KEY)
-					.get(Constants.LEAGUETOPIC).execute();
-			JsonObject x = json.content(0, JsonObject.class);
+		if(bucket.exists(this.topic+":"+Constants.PARTITION_KEY)){
+			JsonDocument json = bucket.get(this.topic+":"+Constants.PARTITION_KEY);
+			JsonObject x = json.content();
 			if(x!=null){
 				Map<String, Object> m = x.toMap();
-				//HashMap<String, HashMap<String, Long>> partitions = json.content(0)
 				Set<Entry<String, Object>> entries = m.entrySet();
 				for(Entry<String, Object> entry:entries){
 					@SuppressWarnings("unchecked")
 					HashMap<String, Integer> v = (HashMap<String, Integer>) entry.getValue();
-					res.put(new TopicPartition(Constants.LEAGUETOPIC, Integer.parseInt(entry.getKey())), 
+					res.put(new TopicPartition(this.topic, Integer.parseInt(entry.getKey())), 
 							v.get(Constants.UNTILOFFSET).longValue());		
 				}
 			}
@@ -89,15 +88,15 @@ public class CouchbaseSink implements Sink, Serializable{
 			            	if(old!=null){
 			            		
 			            		JsonDocument jsonDoc = map.get(old.id());
-			            		JsonDocument newDoc = JsonDocument.create(jsonDoc.id(), JsonObject.empty().put(Constants.COUNT, old.content().getLong(Constants.COUNT)
-										+jsonDoc.content().getLong(Constants.COUNT))
+			            		JsonDocument newDoc = JsonDocument.create(jsonDoc.id(), JsonObject.empty()
+			            				.put(Constants.COUNT, old.content().getLong(Constants.COUNT)
+			            						+jsonDoc.content().getLong(Constants.COUNT))
 										.put(Constants.SUM, old.content().getDouble(Constants.SUM)
 												+jsonDoc.content().getDouble(Constants.SUM)));
 			            		return bucket.async().replace(newDoc);
 			            	}else{
 			            		return bucket.async().insert(map.get(id));
 			            	}
-		                //return bucket.async().get(id);
 		            }
 		        })
 		        .retryWhen(
@@ -123,7 +122,6 @@ public class CouchbaseSink implements Sink, Serializable{
 
 					@Override
 					public Observable<JsonArrayDocument> call(String id) {
-						// TODO Auto-generated method stub
 						if(bucket.exists(id)){
 							JsonArrayDocument old = bucket.get(id, JsonArrayDocument.class);
 							old.content().add(currentFullLeagues);
@@ -137,11 +135,8 @@ public class CouchbaseSink implements Sink, Serializable{
 				})
 				.retryWhen(
 						  RetryBuilder
-						    //will limit to the relevant exception
 						    .anyOf(CASMismatchException.class, DocumentAlreadyExistsException.class)
-						    //will retry only 5 times
 						    .max(5)
-						    //delay doubling each time, from 100ms to 2s
 						    .delay(Delay.linear(TimeUnit.MILLISECONDS, 2000, 100, 2))
 						  .build()
 						)
@@ -151,70 +146,76 @@ public class CouchbaseSink implements Sink, Serializable{
 	}
 	@SuppressWarnings("unchecked")
 	private void updatePartitions(final Bucket bucket, final OffsetRange offset){
-		final JsonObject json = JsonObject.empty();
-		json.put(String.valueOf(offset.partition()), JsonObject.empty().
-					put(Constants.FROMOFFSET, offset.fromOffset()).
-					put(Constants.UNTILOFFSET, offset.untilOffset()));
+		final String partitionId = String.valueOf(offset.partition());
+
 		Observable
 		.just(offsetKey)
 		.flatMap(new Func1<String, Observable<JsonDocument>>(){
 
 			@Override
 			public Observable<JsonDocument> call(String id) {
-				// TODO Auto-generated method stub
 				if(bucket.exists(id)){
-					return bucket.async().replace(JsonDocument.create(offsetKey, JsonObject.empty()
-							.put(Constants.LEAGUETOPIC, json)));
+
+					JsonDocument old = bucket.get(offsetKey);
+					if(old.content().containsKey(partitionId)){
+						JsonObject x = (JsonObject) old.content().get(partitionId);
+						long fromOffset = x.getLong(Constants.FROMOFFSET);
+
+						old.content()
+						.put(partitionId, 
+								JsonObject.empty().
+									put(Constants.FROMOFFSET, fromOffset).
+									put(Constants.UNTILOFFSET, offset.untilOffset()));
+					}else{
+						old.content()
+						.put(partitionId, 
+								JsonObject.empty().
+									put(Constants.FROMOFFSET, offset.fromOffset()).
+									put(Constants.UNTILOFFSET, offset.untilOffset()));
+					}
+					return bucket.async().replace(old);
 				}else{
 					return bucket.async().insert(JsonDocument.create(offsetKey, JsonObject.empty()
-							.put(Constants.LEAGUETOPIC, json)));
+							.put(String.valueOf(offset.partition()), 
+										JsonObject.empty().
+											put(Constants.FROMOFFSET, offset.fromOffset()).
+											put(Constants.UNTILOFFSET, offset.untilOffset()))));
 				}
 			}
 			
 		})
 		.retryWhen(
 				  RetryBuilder
-				    //will limit to the relevant exception
 				    .anyOf(CASMismatchException.class, DocumentAlreadyExistsException.class)
-				    //will retry only 5 times
 				    .max(5)
-				    //delay doubling each time, from 100ms to 2s
 				    .delay(Delay.linear(TimeUnit.MILLISECONDS, 2000, 100, 2))
 				  .build()
 				)
-		.last()
+		.toList()
 		.toBlocking()
 	    .singleOrDefault(null);
 	}
 	@Override
-	public void upsert(Iterator<Tuple2<Tuple2<Long, Long>, UsableColumns>> actual, OffsetRange offset) {
-		// TODO Auto-generated method stub
+	public void upsert(Iterator<Tuple2<String, UsableColumns>> actual, OffsetRange offset) {
 		CouchbaseCluster cluster = CouchbaseCluster.create((String)properties.get("com.couchbase.nodes"));
 		final Bucket bucket = cluster.openBucket((String)properties.get("com.couchbase.bucket"));
 		List<String> queries = new ArrayList<>();
 		final Map<String, JsonDocument> map = new HashMap<>();
 		final Set<Long> fullLeagues = new HashSet<>();
 		while(actual.hasNext()){
-			Tuple2<Tuple2<Long, Long>, UsableColumns> qry = actual.next();
-			String roundKey = new StringBuffer()
-					.append(Constants.LEAGUETOPIC).append(":")
+			Tuple2<String, UsableColumns> qry = actual.next();
+			String key = new StringBuffer()
+					.append(this.topic).append(":")
 					.append(Constants.AGG_HEADER).append(":")
-					.append(qry._1._1).append(":")
+					.append(qry._1)
 					.toString();
-			String roundClusterKey = new StringBuffer()
-					.append(Constants.LEAGUETOPIC).append(":")
-					.append(Constants.AGG_HEADER).append(":")
-					.append(qry._1._1).append(":")
-					.append(qry._1._2).toString();
-			queries.add(roundKey);
-			queries.add(roundClusterKey);
-			map.put(roundKey, JsonDocument.create(roundKey, 
+			
+			queries.add(key);
+			map.put(key, JsonDocument.create(key, 
 					JsonObject.empty().put(Constants.COUNT, qry._2.getUsers())
 					.put(Constants.SUM, qry._2.getAmount())));
-			map.put(roundClusterKey, JsonDocument.create(roundClusterKey, 
-					JsonObject.empty().put(Constants.COUNT, qry._2.getUsers())
-					.put(Constants.SUM, qry._2.getAmount())));
-			fullLeagues.addAll(qry._2.getFullLeagues());
+			if(qry._2.getFullLeagues()!=null)
+				fullLeagues.addAll(qry._2.getFullLeagues());
 		}
 		/* TO DO
 		 * make it atomic
@@ -233,7 +234,6 @@ public class CouchbaseSink implements Sink, Serializable{
 
 	@Override
 	public void upsert(OffsetRange[] offsets) {
-		// TODO Auto-generated method stub
 		CouchbaseCluster cluster = CouchbaseCluster.create((String)properties.get("com.couchbase.nodes"));
 		Bucket bucket = cluster.openBucket((String)properties.get("com.couchbase.bucket"));
 		JsonObject json = JsonObject.empty();
@@ -242,12 +242,12 @@ public class CouchbaseSink implements Sink, Serializable{
 					put(Constants.FROMOFFSET, ofs.fromOffset()).
 					put(Constants.UNTILOFFSET, ofs.untilOffset()));
 		}
-		if(!bucket.exists(Constants.LEAGUETOPIC+":"+Constants.PARTITION_KEY)){
-			bucket.upsert(JsonDocument.create(Constants.LEAGUETOPIC+":"+Constants.PARTITION_KEY, JsonObject.empty()
-					.put(Constants.LEAGUETOPIC, json)));
+		if(!bucket.exists(this.topic+":"+Constants.PARTITION_KEY)){
+			bucket.upsert(JsonDocument.create(this.topic+":"+Constants.PARTITION_KEY, JsonObject.empty()
+					.put(this.topic, json)));
 		}else{
-			bucket.mutateIn(Constants.LEAGUETOPIC+":"+Constants.PARTITION_KEY)
-				.upsert(Constants.LEAGUETOPIC, json);
+			bucket.mutateIn(this.topic+":"+Constants.PARTITION_KEY)
+				.upsert(this.topic, json);
 		}
 		cluster.disconnect();
 	}

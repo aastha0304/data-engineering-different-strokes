@@ -2,69 +2,38 @@ package spark_aggregator.round;
 
 public class RoundMeta {
 	long id;
-	long clusterId;
-	long type;
+	//long type;
 	long country;
 	long game;
-	long tourFormat;
-	long tourMatch;
+	int tourFormat;
+	int tourMatch;
 	long openTime;
-	long roundLockTime;
+	long RoundStartTime;
 	boolean isActive;
-	long halfTime;
-	public long getId() {
-		return id;
-	}
-	public void setId(long id) {
-		this.id = id;
-	}
-	public long getClusterId() {
-		return clusterId;
-	}
-	public void setClusterId(long clusterId) {
-		this.clusterId = clusterId;
-	}
-	public long getType() {
-		return type;
-	}
-	public void setType(long type) {
-		this.type = type;
-	}
+	long halftime;
 	public long getCountry() {
 		return country;
-	}
-	public void setCountry(long country) {
-		this.country = country;
 	}
 	public long getGame() {
 		return game;
 	}
-	public void setGame(long game) {
-		this.game = game;
+	public long getHalfTime() {
+		return halftime;
 	}
-	public long getTourFormat() {
-		return tourFormat;
-	}
-	public void setTourFormat(long tourFormat) {
-		this.tourFormat = tourFormat;
-	}
-	public long getTourMatch() {
-		return tourMatch;
-	}
-	public void setTourMatch(long tourMatch) {
-		this.tourMatch = tourMatch;
+	public long getId() {
+		return id;
 	}
 	public long getOpenTime() {
 		return openTime;
 	}
-	public void setOpenTime(long openTime) {
-		this.openTime = openTime;
+	public long getRoundStartTime() {
+		return RoundStartTime;
 	}
-	public long getRoundLockTime() {
-		return roundLockTime;
+	public int getTourFormat() {
+		return tourFormat;
 	}
-	public void setRoundLockTime(long roundLockTime) {
-		this.roundLockTime = roundLockTime;
+	public int getTourMatch() {
+		return tourMatch;
 	}
 	public boolean isActive() {
 		return isActive;
@@ -72,10 +41,28 @@ public class RoundMeta {
 	public void setActive(boolean isActive) {
 		this.isActive = isActive;
 	}
-	public long getHalfTime() {
-		return halfTime;
+	public void setCountry(long country) {
+		this.country = country;
+	}
+	public void setGame(long game) {
+		this.game = game;
 	}
 	public void setHalfTime(long halfTime) {
-		this.halfTime = halfTime;
+		this.halftime = halfTime;
+	}
+	public void setId(long id) {
+		this.id = id;
+	}
+	public void setOpenTime(long openTime) {
+		this.openTime = openTime;
+	}
+	public void setRoundStartTime(long roundLockTime) {
+		this.RoundStartTime = roundLockTime;
+	}
+	public void setTourFormat(int tourFormat) {
+		this.tourFormat = tourFormat;
+	}
+	public void setTourMatch(int tourMatch) {
+		this.tourMatch = tourMatch;
 	}
 }

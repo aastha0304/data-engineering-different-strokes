@@ -30,9 +30,10 @@ public class SchemaHandler implements Serializable{
 	 */
 	private static final long serialVersionUID = 1L;
 	private static Broadcast<Tuple2<String, String>> instance	;
+	private static String topic;
 	private SchemaHandler() {
 	}
-	public static Broadcast<Tuple2<String, String>> getInstance(JavaSparkContext jsc, String url) {
+	public static Broadcast<Tuple2<String, String>> getInstance(JavaSparkContext jsc, String url, String topic) {
 		if (instance == null) {
 		      synchronized (SchemaHandler.class) {
 		    	  if (instance == null) {
@@ -42,10 +43,11 @@ public class SchemaHandler implements Serializable{
 		    	  }
 		      }
 		}
+		SchemaHandler.topic = topic;
 		return instance;
 	}
 	private static Schema fixSchema(String suffix, String schemaUrl) {
-		String subject = new StringBuffer().append(Constants.LEAGUETOPIC).append(suffix).toString();
+		String subject = new StringBuffer().append(topic).append(suffix).toString();
 		Integer identityMapCapacity;
 		io.confluent.kafka.schemaregistry.client.rest.entities.Schema response;
 		identityMapCapacity = 100;
@@ -57,7 +59,6 @@ public class SchemaHandler implements Serializable{
 			return cachedSchemaRegistryClient.getBySubjectAndID(subject,
 					response.getId());
 		} catch (IOException | RestClientException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 			System.exit(-1);
 		}

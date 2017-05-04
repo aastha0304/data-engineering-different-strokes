@@ -2,38 +2,42 @@ package spark_aggregator.league.utils;
 
 import java.io.Serializable;
 
-public class FeeSizeRanges implements Comparable<FeeSizeRanges>, Serializable{
-	/**
-	 * 
-	 */
-	private static final long serialVersionUID = 1L;
-	float fee;
-	int size;
-	public float getFee() {
-		return fee;
-	}
-	public void setFee(float fee) {
-		this.fee = fee;
-	}
-	public int getSize() {
-		return size;
-	}
-	public void setSize(int size) {
-		this.size = size;
-	}
-	@Override
-	public int compareTo(FeeSizeRanges obj2) {
-		// TODO Auto-generated method stub
-		if(this.getFee()>obj2.getFee())
-			return 1;
-		else if(this.getFee()<obj2.getFee())
-			return -1;
-		else if(this.getSize()>obj2.getSize())
-			return 1;
-		else if(this.getSize()<obj2.getSize())
-			return -1;
-		else
-			return 0;
-	}
+public class FeeSizeRanges implements Serializable{
+		/**
+		 * 
+		 */
+		private static final long serialVersionUID = 1L;
+		float minFee;
+		public float getMinFee() {
+			return minFee;
+		}
+		public void setMinFee(float minFee) {
+			this.minFee = minFee;
+		}
+		public int getMinSize() {
+			return minSize;
+		}
+		public void setMinSize(int minSize) {
+			this.minSize = minSize;
+		}
+		public float getMaxFee() {
+			return maxFee;
+		}
+		public void setMaxFee(float maxFee) {
+			this.maxFee = maxFee;
+		}
+		public int getMaxSize() {
+			return maxSize;
+		}
+		public void setMaxSize(int maxSize) {
+			this.maxSize = maxSize;
+		}
+		int minSize;
+		float maxFee;
+		int maxSize;
+		
 }
+
+
+
 

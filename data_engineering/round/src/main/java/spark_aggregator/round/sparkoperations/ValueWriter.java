@@ -3,6 +3,7 @@ package spark_aggregator.round.sparkoperations;
 import java.io.Serializable;
 import java.util.Iterator;
 
+import org.apache.spark.TaskContext;
 import org.apache.spark.api.java.function.VoidFunction;
 import org.apache.spark.streaming.kafka010.OffsetRange;
 
@@ -21,10 +22,13 @@ public class ValueWriter implements VoidFunction<Iterator<Tuple2<Long,RoundMeta>
 		this.sink = sink;
 		this.offsetRanges = offsetRanges;
 	}
-
+	
 	@Override
-	public void call(Iterator<Tuple2<Long, RoundMeta>> t) throws Exception {
+	public void call(Iterator<Tuple2<Long,RoundMeta>> t) throws Exception {
 		// TODO Auto-generated method stub
-		this.sink.upsert(t, null);
+		if(offsetRanges!=null)
+			this.sink.upsert(t, this.offsetRanges[TaskContext.get().partitionId()]);
+		else
+			this.sink.upsert(t, null);
 	}
 }

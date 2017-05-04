@@ -16,12 +16,13 @@ public class PaidUserFilter implements Function<ConsumerRecord<Long, GenericReco
 
 	@Override
 	public Boolean call(ConsumerRecord<Long, GenericRecord> arg0) throws Exception {
-		// TODO Auto-generated method stub
 		GenericRecord record = arg0.value();
 		/* TO DO
 		 * add more sanity tests here if needed
 		 */
-		if((float)record.get(Constants.ENTRYFEE_KEY)!=0)
+		if(record.get(Constants.ENTRYFEE_KEY) != null && 
+				(float)record.get(Constants.ENTRYFEE_KEY) != 0 && 
+				record.get(Constants.LEAGUESIZE_KEY) != null && !record.get(Constants.LEAGUETYPE_KEY).toString().equals(Constants.PRIVATELEAGUE))
 			return true;
 		return false;
 	}

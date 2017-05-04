@@ -11,7 +11,7 @@ import scala.Tuple2;
 import spark_aggregator.league.UsableColumns;
 import spark_aggregator.league.sink.Sink;
 
-public class ValueWriter implements VoidFunction<Iterator<Tuple2<Tuple2<Long, Long>, UsableColumns>>>, Serializable{
+public class ValueWriter implements VoidFunction<Iterator<Tuple2<String, UsableColumns>>>, Serializable{
 	/**
 	 * 
 	 */
@@ -24,8 +24,7 @@ public class ValueWriter implements VoidFunction<Iterator<Tuple2<Tuple2<Long, Lo
 	}
 	
 	@Override
-	public void call(Iterator<Tuple2<Tuple2<Long, Long>, UsableColumns>> t) throws Exception {
-		// TODO Auto-generated method stub
+	public void call(Iterator<Tuple2<String, UsableColumns>> t) throws Exception {
 		if(offsetRanges!=null)
 			this.sink.upsert(t, this.offsetRanges[TaskContext.get().partitionId()]);
 		else

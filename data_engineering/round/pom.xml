@@ -82,6 +82,22 @@
 
 	<dependencies>
 		<dependency>
+		    <groupId>org.apache.kafka</groupId>
+		    <artifactId>kafka-clients</artifactId>
+		    <version>0.10.2.0</version>
+		</dependency>
+		<dependency>
+		    <groupId>org.apache.spark</groupId>
+		    <artifactId>spark-streaming-kafka-0-10_2.11</artifactId>
+		    <version>2.1.0</version>
+				<exclusions>
+					<exclusion>
+					  <groupId>org.apache.kafka</groupId>
+					  <artifactId>kafka-clients</artifactId>
+					</exclusion>
+				</exclusions>
+		</dependency>
+		<dependency>
 		    <groupId>org.apache.spark</groupId>
 		    <artifactId>spark-core_2.11</artifactId>
 		    <version>2.1.0</version>
@@ -90,16 +106,6 @@
 			<groupId>org.apache.spark</groupId>
 			<artifactId>spark-streaming_2.11</artifactId>
 			<version>2.1.0</version>
-		</dependency>
-		<dependency>
-		    <groupId>org.apache.kafka</groupId>
-		    <artifactId>kafka-clients</artifactId>
-		    <version>0.10.0.0</version>
-		</dependency>
-		<dependency>
-		    <groupId>org.apache.spark</groupId>
-		    <artifactId>spark-streaming-kafka-0-10_2.11</artifactId>
-		    <version>2.1.0</version>
 		</dependency>
 		<dependency>
 		    <groupId>io.confluent</groupId>
