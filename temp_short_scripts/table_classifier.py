@@ -4,8 +4,7 @@ import nltk, string
 from sklearn.feature_extraction.text import TfidfVectorizer
 import re
 nltk.download('punkt') # if necessary...
-#http://blog.yhat.com/posts/logistic-regression-and-python.html
-#https://stats.stackexchange.com/questions/301333/how-to-determine-summary-like-tables-on-any-informative-web-html-page
+
 
 stemmer = nltk.stem.porter.PorterStemmer()
 remove_punctuation_map = dict((ord(char), None) for char in string.punctuation)
@@ -35,13 +34,13 @@ def search(values, search_for):
     for k in values:
         if isinstance(values[k], (list,set,tuple)):
             for v in values[k]:
-                print(v)
+                #print('to find :',search_for,' strs in list ',v)
                 if search_for in v:
-                    print(search_for, v)
+                    #print('found in one of in list ',search_for, v)
                     return k
         else:
             if search_for in values[k]:
-                print(search_for, values[k])
+                #print('found in str ',search_for, values[k])
                 return k
     return None
 
@@ -96,12 +95,11 @@ def has(table, tag):
 
 
 def has_attr(attr, txt, table):
-    val = 1 if search(attr, txt) is not None else 0
+    val = 1 if search(attr, txt) is not None or search(table.attrs, txt) is not None else 0
     if val == 0:
         children = table.find_all()
         for child in children:
             return 1 if search(child.attrs, txt) is not None else 0
-    print(val)
     return val
 
 
@@ -128,8 +126,10 @@ def build_table_row(e,table,soup):
     has_th = has(table, 'th')
     has_img = has(table, 'img')
     has_infobox = has_attr(p_attr, 'infobox', table) | has_attr(p_attr, 'pi', table)
-    print(idx,is_table,is_aside,float_right,depth_table,tf_idf,no_rows,max_no_col,texttag_ratio,has_th,has_img,has_infobox)
-    dataset.append((idx,is_table,is_aside,float_right,depth_table,tf_idf,no_rows,max_no_col,texttag_ratio,has_th,has_img,has_infobox))
+    print(idx,is_table,is_aside,float_right,depth_table,tf_idf,no_rows,max_no_col,texttag_ratio,has_th,has_img,
+          has_infobox)
+    dataset.append((idx,is_table,is_aside,float_right,depth_table,tf_idf,no_rows,max_no_col,texttag_ratio,has_th,
+                    has_img,has_infobox))
 
 
 def extractions():
