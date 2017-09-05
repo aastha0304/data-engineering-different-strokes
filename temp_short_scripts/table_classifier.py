@@ -3,9 +3,10 @@ from bs4 import BeautifulSoup
 import nltk, string
 from sklearn.feature_extraction.text import TfidfVectorizer
 import re
-nltk.download('punkt') # if necessary...
+#nltk.download('punkt') # if necessary...
 
-
+#https://stats.stackexchange.com/questions/301333/how-to-determine-summary-like-tables-on-any-informative-web-html-page
+#http://blog.yhat.com/posts/logistic-regression-and-python.html
 stemmer = nltk.stem.porter.PorterStemmer()
 remove_punctuation_map = dict((ord(char), None) for char in string.punctuation)
 
@@ -97,9 +98,11 @@ def has(table, tag):
 def has_attr(attr, txt, table):
     val = 1 if search(attr, txt) is not None or search(table.attrs, txt) is not None else 0
     if val == 0:
-        children = table.find_all()
-        for child in children:
-            return 1 if search(child.attrs, txt) is not None else 0
+        for children in table.find_all(recursive=False):
+            val = 1 if search(children.attrs, txt) is not None else 0
+            if val == 0:
+                for child in children.find_all(recursive=False):
+                    val = 1 if search(child.attrs, txt) is not None else 0
     return val
 
 
@@ -119,9 +122,9 @@ def build_table_row(e,table,soup):
     depth_table = find_depth(table)
     tf_idf=tfidf(table,soup)
     no_rows,max_no_col = find_tr_td(table)
-    width=handle_width(attr)
-    if width is None:
-        width = handle_width(p_attr)
+    #width=handle_width(attr)
+    #if width is None:
+        #width = handle_width(p_attr)
     texttag_ratio = text_to_tag_ratio(table)
     has_th = has(table, 'th')
     has_img = has(table, 'img')
@@ -133,7 +136,7 @@ def build_table_row(e,table,soup):
 
 
 def extractions():
-    html = urllib.urlopen('http://wikitravel.org/en/China')
+    html = urllib.urlopen('http://lionking.wikia.com/wiki/Simba')
     soup = BeautifulSoup(html)
     tables = soup.findAll('table')
     #tables.append(soup.find('aside'))
