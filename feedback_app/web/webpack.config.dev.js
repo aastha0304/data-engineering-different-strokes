@@ -15,7 +15,7 @@ export default {
       ...hotReloadModules,
       resolve(__dirname, 'src/common')
     ],
-    'agency': [...hotReloadModules, resolve(__dirname, 'src/agency/index')],
+    //'agency': [...hotReloadModules, resolve(__dirname, 'src/agency/index')],
     'reviewer': [...hotReloadModules, resolve(__dirname, 'src/reviewer/index')],
     'block-explorer': [...hotReloadModules, resolve(__dirname, 'src/block-explorer/index')]
   },

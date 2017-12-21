@@ -1,4 +1,4 @@
-version: '2'
+version: "2.0"
 
 services:
   agency-ca:
@@ -8,16 +8,16 @@ services:
       service: ca-base
     image: agency-ca
     ports:
-    - 7054:7054
+     - 7054:7054
 
-  agency-ca:
-    container_name: agency-ca
+  reviewer-ca:
+    container_name: reviewer-ca
     extends:
       file: ./ca-base.yaml
       service: ca-base
-    image: agency-ca
+    image: reviewer-ca
     ports:
-- 8054:7054
+     - 8054:7054
 
   orderer0:
     container_name: orderer0
@@ -36,7 +36,7 @@ services:
     working_dir: /orderer
     command: orderer
     ports:
-- 7050:7050
+     - 7050:7050
 
   reviewer-peer:
     container_name: reviewer-peer
@@ -53,7 +53,7 @@ services:
     - 7051:7051
     - 7053:7053
     depends_on:
-- orderer0
+    - orderer0
 
   agency-peer:
     container_name: agency-peer

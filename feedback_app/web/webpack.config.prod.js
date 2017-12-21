@@ -15,7 +15,7 @@ export default {
       'isomorphic-fetch',
       resolve(__dirname, 'src/common')
     ],
-    'agency': resolve(__dirname, 'src/agency/index'),
+    //'agency': resolve(__dirname, 'src/agency/index'),
     'reviewer': resolve(__dirname, 'src/reviewer/index'),
     'block-explorer': resolve(__dirname, 'src/block-explorer/index')
   },

@@ -11,7 +11,7 @@ import { connect } from 'react-redux';
 import { withRouter, Link, Redirect } from 'react-router-dom';
 
 import Loading from '../../../shared/Loading';
-import * as reviewsActions from '../../actions/reviewsAction';
+import * as reviewsActions from '../../actions/reviewsActions';
 
 class Mainpage extends React.Component{
 	static get propTypes() {

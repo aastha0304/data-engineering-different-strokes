@@ -18,4 +18,4 @@ services:
     working_dir: /peer
     command: peer node start
     volumes:
-- /var/run/:/host/var/run/
+     - /var/run/:/host/var/run/

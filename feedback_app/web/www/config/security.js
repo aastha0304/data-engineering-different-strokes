@@ -12,7 +12,7 @@ export default function(app) {
     frameguard: false
   }));
 
-  app.use(['reviewer/api/', 'agency/api/'],
+  app.use(['reviewer/api/'], //'agency/api/'],
   expressRateLimit({
     windowMs: 30 * 1000,
     delayMs: 0,

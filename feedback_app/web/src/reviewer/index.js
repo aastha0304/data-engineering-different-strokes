@@ -11,12 +11,12 @@ import getLocale from '../shared/getLocale';
 import AppRouter from './router';
 import configStore from './store';
 import translations from './translations';
-import { loadClaims } from './actions/claimProcessingActions';
-import { loadContractTypes } from './actions/contractTemplateActions';
+import { loadReviews } from './actions/reviewProcessingActions';
+//import { loadContractTypes } from './actions/contractTemplateActions';
 
 const store = configStore();
-store.dispatch(loadClaims());
-store.dispatch(loadContractTypes());
+store.dispatch(loadReviews());
+//store.dispatch(loadContractTypes());
 const locale = getLocale();
 addLocaleData([...deLocaleData, ...enLocaleData]);
 
