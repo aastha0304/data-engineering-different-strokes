@@ -2,11 +2,13 @@ import express from 'express';
 
 import * as ReviewerPeer from '../blockchain/reviewerPeer';
 
+console.log('importing reviewerpeer......');
 const router = express.Router();
 
 // Render main page
 router.get('/', (req, res) => {
-  res.render('reviewer-main', { reviewerActive: true });
+ // res.render('reviewer-main', { reviewerActive: true });
+	res.send('hello world');
 });
 
 // Feedback Processing
@@ -46,3 +48,16 @@ router.post('/api/file-review', async (req, res) => {
     return;
   }
 });
+
+router.get('*', (req, res) => {
+    res.render('reviewer-main', { reviewerActive: true });
+});
+
+function wsConfig(io) {
+  ReviewerPeer.on('block', block => {
+    io.emit('block', block);
+  });
+}
+
+export default router;
+export { wsConfig };
