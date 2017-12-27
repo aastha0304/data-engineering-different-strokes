@@ -3,7 +3,7 @@ package main
 import (
 	"encoding/json"
 
-	"strings"
+	//"strings"
 
 	"time"
 
@@ -89,12 +89,17 @@ func fileReview(stub shim.ChaincodeStubInterface, args []string) pb.Response {
 	review := review{
 		Date:         dto.Date,
 		Description:  dto.Description,
-		IsHappy:      dto.Happy,
+		IsHappy:      dto.IsHappy,
 		Status:       ReviewStatusNew,
+	}
+        reviewKey, err := stub.CreateCompositeKey(prefixReview,
+		[]string{review.Date.String(), review.Description})
+	if err != nil {
+		return shim.Error(err.Error())
 	}
 
 	// Persist claim
-	reviewBytes, err = json.Marshal(review)
+	reviewBytes, err := json.Marshal(review)
 	if err != nil {
 		return shim.Error(err.Error())
 	}

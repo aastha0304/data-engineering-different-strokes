@@ -4,8 +4,8 @@ import (
 	"encoding/json"
 	"time"
 
-	"errors"
-	"github.com/hyperledger/fabric/core/chaincode/shim"
+	//"errors"
+	//"github.com/hyperledger/fabric/core/chaincode/shim"
 	"strings"
 )
 
@@ -54,7 +54,7 @@ func (s *ReviewStatus) UnmarshalJSON(b []byte) error {
 	return nil
 }
 
-func (s Reviewtatus) MarshalJSON() ([]byte, error) {
+func (s ReviewStatus) MarshalJSON() ([]byte, error) {
 	var value string
 
 	switch s {

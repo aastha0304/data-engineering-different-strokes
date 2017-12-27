@@ -3,7 +3,7 @@ package main
 import (
 	"fmt"
 
-	"encoding/json"
+	//"encoding/json"
 
 	"github.com/hyperledger/fabric/core/chaincode/shim"
 	pb "github.com/hyperledger/fabric/protos/peer"
@@ -22,7 +22,7 @@ var bcFunctions = map[string]func(shim.ChaincodeStubInterface, []string) pb.Resp
 
 // Init callback representing the invocation of a chaincode
 func (t *SmartContract) Init(stub shim.ChaincodeStubInterface) pb.Response {
-	_, args := stub.GetFunctionAndParameters()
+	//_, args := stub.GetFunctionAndParameters()
 
 	return shim.Success(nil)
 }
