@@ -27,7 +27,10 @@ router.post('/api/reviews', async (req, res) => {
 });
 
 router.post('/api/file-review', async (req, res) => {
-  if (typeof req.body.user !== 'object' ||
+  console.log(req.body);
+  console.log(req.body.review);
+  if (
+    //typeof req.body.user !== 'object' ||
     typeof req.body.review != 'object') {
     res.json({ error: 'Invalid request!' });
     return;

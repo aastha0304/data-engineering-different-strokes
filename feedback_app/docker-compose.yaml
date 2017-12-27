@@ -3,6 +3,7 @@ version: "2.0"
 services:
   agency-ca:
     container_name: agency-ca
+    hostname: agency-ca
     extends:
       file: ./ca-base.yaml
       service: ca-base
@@ -12,6 +13,7 @@ services:
 
   reviewer-ca:
     container_name: reviewer-ca
+    hostname: reviewer-ca
     extends:
       file: ./ca-base.yaml
       service: ca-base
@@ -21,6 +23,7 @@ services:
 
   orderer0:
     container_name: orderer0
+    hostname: orderer0
     image: orderer
     environment:
     - ORDERER_GENERAL_LOGLEVEL=debug
@@ -40,6 +43,7 @@ services:
 
   reviewer-peer:
     container_name: reviewer-peer
+    hostname: reviewer-peer
     extends:
       file: ./peer-base.yaml
       service: peer-base
@@ -57,6 +61,7 @@ services:
 
   agency-peer:
     container_name: agency-peer
+    hostname: agency-peer
     extends:
       file: ./peer-base.yaml
       service: peer-base
@@ -73,20 +78,20 @@ services:
     - orderer0
     - reviewer-peer
 
-  web:
-    container_name: web
-    image: web
-    environment:
-    - PORT=3000
-    - DOCKER_SOCKET_PATH=/host/var/run/docker.sock
-    - DOCKER_CCENV_IMAGE=hyperledger/fabric-ccenv:x86_64-1.0.2
-    ports:
-    - 3000:3000
-    volumes:
-    - /var/run/:/host/var/run/
-    depends_on:
-    - orderer0
-    - reviewer-ca
-    - reviewer-peer
-    - agency-ca
-    - agency-peer
+#  web:
+#    container_name: web
+#   image: web
+#    environment:
+#    - PORT=3000
+#    - DOCKER_SOCKET_PATH=/host/var/run/docker.sock
+#    - DOCKER_CCENV_IMAGE=hyperledger/fabric-ccenv:x86_64-1.0.2
+#    ports:
+#    - 3000:3000
+#    volumes:
+#    - /var/run/:/host/var/run/
+#    depends_on:
+#    - orderer0
+#    - reviewer-ca
+#    - reviewer-peer
+#    - agency-ca
+#   - agency-peer
