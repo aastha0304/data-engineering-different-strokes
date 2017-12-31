@@ -8,7 +8,7 @@ const config = {
   channelName: 'default',
   channelConfig: readFileSync(resolve(__dirname, '../../channel.tx')),
   chaincodeId: 'bcins',
-  chaincodeVersion: 'v8',
+  chaincodeVersion: 'v11',
   chaincodePath: 'bcins',
   orderer0: {
     hostname: 'orderer0',

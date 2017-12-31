@@ -35,7 +35,7 @@ export async function fileReview(review) {
     if (successResult) {
       throw new Error(successResult);
     }
-    return c.uuid;
+    return c.id;
   } catch (e) {
     throw wrapError(`Error filing a new review: ${e.message}`, e);
   }
